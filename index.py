@@ -102,7 +102,7 @@ def tienda():
 
     # Limpiando Carpeta
     start = time.time(); x = 1
-    print('Limpiando carpeta de items...')
+    jdbconsole.log('Limpiando carpeta de items...')
     try:
         shutil.rmtree('./output/tiendaHoy')
         os.makedirs('./output/tiendaHoy')
@@ -111,21 +111,19 @@ def tienda():
 
     # Consumiendo API
     try:
-        print('Obteniendo información de la tienda...')
+        jdbconsole.log('Obteniendo información de la tienda...')
         response = requests.get('https://fortniteapi.io/v2/shop?lang=es', headers=headers); new = response.json()
         y = len(new["shop"])
-        print('Información de tienda obtenida con exito.')
-        print(f'Se encontraron {y} items en la tienda de hoy.\n')
+        jdbconsole.log('Información de tienda obtenida con exito.')
+        jdbconsole.log(f'Se encontraron {y} items en la tienda de hoy.\n')
     except Exception as error:
-        system('cls')
-        print(Fore.YELLOW + f"Tienda Diaria.\n")
         jdbconsole.error('Error al obtener la tienda.')
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
         jdbconsole.tip('Revisa que tengas la key de FortniteApi.io en config.json en la carpeta assets')
         jdbconsole.exitMsg()
     
-    print('Preparando para empezar a generar items...')
+    jdbconsole.log('Preparando para empezar a generar items...')
     print('')
     for i in new["shop"]:
         try:
@@ -163,14 +161,14 @@ def tienda():
             os.remove(f'./assets/cache/{id}.png')
             porcentaje = x/y; porcentaje = porcentaje * 100
 
-            print(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {int(round(porcentaje, 0))}%)')
+            jdbconsole.log(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {int(round(porcentaje, 0))}%)')
             x=x+1
         except Exception as error:
             jdbconsole.error(f'Error al generar la imagen de {i["displayName"]}, ignorando item. - {error}')
 
     # Merge de la tienda pe xd
     try:
-        print('Juntando Imágenes y creando la tienda...')
+        jdbconsole.log('Juntando Imágenes y creando la tienda...')
         
         # Conteo de items, y creacion de la imagen png de todos los items a medida
         imagenes = [file for file in listdir(f'./output/tiendaHoy')]
@@ -216,14 +214,14 @@ def tienda():
         # Comprimiendo imagen y guardando
         xComprimida, yComprimida = math.floor(xFinal/2), math.floor(yFinal/2)
         imagenFinal = imagenFinal.resize((xComprimida, yComprimida),Image.ANTIALIAS); imagenFinal.save(f"output/tienda.png",quality=65)
-        print('Imagen Generada en la carpeta output!')
+        jdbconsole.log('Imagen Generada en la carpeta output!')
 
         # Subir a Twitter en caso que esté activado + su Exception en caso de error
         if twitterConnect:
-            print('Subiendo a Twitter.')
+            jdbconsole.log('Subiendo a Twitter.')
             try:
                 twitterAPI.PostUpdate(twtBodyTienda, media='output/tienda.png')
-                print('Tweet Subido con éxito!')
+                jdbconsole.log('Tweet Subido con éxito!')
             except Exception as error:
                 jdbconsole.error('Ha ocurrido un error al intentar subir el tweet')
                 jdbconsole.error(error)
@@ -462,7 +460,7 @@ def autoSecciones():
     # Literal el print de abajo dice lo que hace este bloque de código xd x6
     jdbconsole.log("Conectando con la API")
     try:
-        data1 = requests.get("https://fn-api.com/api/shop/br/sections?lang=es").json()['data']['sections']
+        data1 = requests.get("https://fn-api.com/api/shop/br/sections?lang=es").json()['data']['hash']
         jdbconsole.log('API conectada con éxito')
     except Exception as error:
         jdbconsole.error('Ha ocurrido un error al intentar conectar con la API')
@@ -473,6 +471,25 @@ def autoSecciones():
     # Inicializando variable de secciones e intentos
     secciones = "" 
     att = 1
+
+    # Bucle "Infinito"
+    while 1:
+            resp2 = requests.get("https://fn-api.com/api/shop/br/sections?lang=es")
+            
+            if resp2:
+                data2 = resp2.json()
+                jdbconsole.log(f"Detectando cambios en las secciones | Intento #{att}")
+                att += 1
+
+                # Detectar si data1 y data 2 no son iguales
+                if data1['data']['hash'] != data2['data']['hash']:
+                    # Generar las nuevas secciones llamando a la funcion de secciones
+                    jdbconsole.tip("Cambio de secciones!")
+                    secciones()
+            
+            else:
+                jdbconsole.error("Actualmente, la API está caída. Espere mientras se intenta reconectar con la API...")
+                att += 1
 
 
 ################################################################################################################################################################################
