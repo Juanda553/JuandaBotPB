@@ -491,6 +491,45 @@ def autoSecciones():
                 jdbconsole.error("Actualmente, la API está caída. Espere mientras se intenta reconectar con la API...")
                 att += 1
 
+# Función Automatica - Generacionde tienda actual
+def autoTienda():
+    if rcpConnect: RPC.update(state='Tienda diaria AUTO', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
+    print(Fore.YELLOW + f'Tienda Diaria - MODO AUTOMATICO.\nLOGGER\n\n')
+
+    # Literal el print de abajo dice lo que hace este bloque de código xd x6
+    jdbconsole.log("Conectando con la API")
+    try:
+        data1 = requests.get('https://fortniteapi.io/v2/shop?lang=es', headers=headers).json()['lastUpdate']['uid']
+        jdbconsole.log('API conectada con éxito')
+    except Exception as error:
+        jdbconsole.error('Ha ocurrido un error al intentar conectar con la API')
+        jdbconsole.error(error)
+        jdbconsole.errTip(linkDiscord)
+        jdbconsole.exitMsg()
+        
+    # Inicializando variable de secciones e intentos
+    secciones = "" 
+    att = 1
+
+    # Bucle "Infinito"
+    while 1:
+            resp2 = requests.get('https://fortniteapi.io/v2/shop?lang=es', headers=headers)
+            
+            if resp2:
+                data2 = resp2.json()
+                jdbconsole.log(f"Detectando cambios en la tienda | Intento #{att}")
+                att += 1
+
+                # Detectar si data1 y data 2 no son iguales
+                if data1 != data2['lastUpdate']['uid']:
+                    # Generar las nuevas secciones llamando a la funcion de secciones
+                    jdbconsole.tip("Cambio de secciones!")
+                    tienda()
+            
+            else:
+                jdbconsole.error("Actualmente, la API está caída. Espere mientras se intenta reconectar con la API...")
+                att += 1
+
 
 ################################################################################################################################################################################
 
