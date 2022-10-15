@@ -57,7 +57,6 @@ rpcImage = juandaBotApiData["public"]["RPC"]["RPCimage"]
 rpcBotones = juandaBotApiData["public"]["RPC"]["RPCbuttons"]
 JuandaFortUser = juandaBotApiData["owner"]
 
-
 hoy = datetime.now(); fechaHoy = date(hoy.year, hoy.month, hoy.day)
 fechaHoySTR = f"{hoy.year}-{hoy.month}-{hoy.day}"
 
@@ -68,23 +67,26 @@ if twitterIniciar:
         print("Conectando a Twitter")
         twitterAPI = twitter.Api(consumer_key=key, consumer_secret=secret_key, access_token_key=token, access_token_secret=secret_token);twitterAPI.VerifyCredentials()
         twitterConnect = True
-        print('Twitter Conectado con exito.')
+        print('Twitter Conectado con éxito.')
     except Exception as Error:
         twitterConnect = False
+        twtConectionErrorMsg = Error
         jdbconsole.warning('No se pudo conectar a Twitter. Revise las keys')
 else:
-    jdbconsole.warning('La conexion a Twitter está desactivada en config.json')
+    jdbconsole.warning('La conexión a Twitter está desactivada en config.json')
     twitterConnect = False
+    twtConectionErrorMsg = "Desactivado en sus configuraciones"
+
 try:
     print("Conectando RPC de Discord...")
     RPC = Presence(919501199428976641); RPC.connect()
     RPC.update(state="Cargando...", large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones)
     rcpConnect = True
-    print('Discord Conectado con exito.')
-
-except:
-    jdbconsole.warning('No se pudo conectar a Discord.')
+    print('Discord Conectado con éxito.')
+except Exception as Error:
+    rcpConectionErrorMsg = Error
     rcpConnect = False
+    jdbconsole.warning('No se pudo conectar a Discord.')
 
 ################################################################################################################################################################################
 
@@ -428,7 +430,7 @@ def menu():
     if twitterConnect:
         print(Fore.GREEN + 'Twitter Conectado!')
     else:
-        print(Fore.RED + 'Twitter Desconectado!')
+        print(Fore.RED + f'Twitter Desconectado! ({twtConectionErrorMsg})')
     if fnapikey == '':
         print(Fore.RED + 'No se introdujo ninguna key de FortniteAPI.io')
     elif checkFNapiIO(JuandaFortUser, fnapikey):
