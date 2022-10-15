@@ -21,6 +21,8 @@ from pypresence import Presence
 
 print('Cargando...')
 
+# Cargado inicial de configuraciones por el usuario
+
 jdbFile = open("assets/config.json"); jdbData = json.load(jdbFile); jdbFile.close()
 
 botVersion = '1.1.1'
@@ -46,6 +48,7 @@ fuente = f'assets/fuentes/Fortnite.otf'
 os.system("cls")
 os.system(f"TITLE JuandaBot {botVersion}")
 
+# Comprobar version actual de JuandaBot
 juandaBotAPI = requests.get('https://pastebin.com/raw/P0nLHktg')
 juandaBotApiData = juandaBotAPI.json()
 
@@ -62,6 +65,7 @@ fechaHoySTR = f"{hoy.year}-{hoy.month}-{hoy.day}"
 
 ################################################################################################################################################################################
 
+# Autentificar con twitter
 if twitterIniciar:
     try:
         print("Conectando a Twitter")
@@ -72,11 +76,12 @@ if twitterIniciar:
         twitterConnect = False
         twtConectionErrorMsg = Error
         jdbconsole.warning('No se pudo conectar a Twitter. Revise las keys')
-else:
+else: #Si está desactivado en las configuraciones
     jdbconsole.warning('La conexión a Twitter está desactivada en config.json')
     twitterConnect = False
     twtConectionErrorMsg = "Desactivado en sus configuraciones"
 
+# RCP de Discord
 try:
     print("Conectando RPC de Discord...")
     RPC = Presence(919501199428976641); RPC.connect()
@@ -90,10 +95,12 @@ except Exception as Error:
 
 ################################################################################################################################################################################
 
+# Funcion - Obtener la tienda actual
 def tienda():
     print(Fore.YELLOW + f"Tienda Diaria.\nLOGGER\n\n")
     if rcpConnect: RPC.update(state='Tienda de objetos BR', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
 
+    # Limpiando Carpeta
     start = time.time(); x = 1
     print('Limpiando carpeta de items...')
     try:
@@ -102,11 +109,12 @@ def tienda():
     except:
         os.makedirs('./output/tiendaHoy')
 
+    # Consumiendo API
     try:
-        print('Obteniendo informacion de la tienda...')
+        print('Obteniendo información de la tienda...')
         response = requests.get('https://fortniteapi.io/v2/shop?lang=es', headers=headers); new = response.json()
         y = len(new["shop"])
-        print('Informacion de tienda obtenida con exito.')
+        print('Información de tienda obtenida con exito.')
         print(f'Se encontraron {y} items en la tienda de hoy.\n')
     except Exception as error:
         system('cls')
@@ -114,7 +122,7 @@ def tienda():
         jdbconsole.error('Error al obtener la tienda.')
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
-        jdbconsole.tip('Revisa que tengas la key de Fortniteapi.io en config.json en la carpeta assets')
+        jdbconsole.tip('Revisa que tengas la key de FortniteApi.io en config.json en la carpeta assets')
         jdbconsole.exitMsg()
     
     print('Preparando para empezar a generar items...')
@@ -125,6 +133,7 @@ def tienda():
             imgUrl = i["displayAssets"][0]["full_background"]
             id = i["mainId"]
 
+            # Descargando imagen del item
             img = requests.get(imgUrl, allow_redirects=True); open(f'./assets/cache/{id}.png', 'wb').write(img.content)
             cosImg=Image.open(f'./assets/cache/{id}.png'); cosImg=cosImg.resize((512,512)); cosImg.save(f'./assets/cache/{id}.png')
 
@@ -132,6 +141,7 @@ def tienda():
     
             draw=ImageDraw.Draw(img)
     
+            # Comprobar días sin salir
             try:
                 itemUltimaSalida = i["previousReleaseDate"]
                 a = datetime.strptime(itemUltimaSalida, '%Y-%m-%d').date(); b = a - fechaHoy
@@ -139,9 +149,11 @@ def tienda():
             except:
                 itemDiasSinSalir = 'Nuevo!'
 
+            # Dibujar nombre, precio y días sin salir en la imagen
             font=ImageFont.truetype(fuente,24)
             draw.text((4,487),itemDiasSinSalir,font=font,fill="white")
 
+            # Guardando imagen generada completa, en orden de tipo de item -- Porcentaje de generación
             if tipopopo == 'bundle':
                 img.save(f'./output/tiendaHoy/a{id}.png')
             elif tipopopo == "outfit":
@@ -156,14 +168,18 @@ def tienda():
         except Exception as error:
             jdbconsole.error(f'Error al generar la imagen de {i["displayName"]}, ignorando item. - {error}')
 
+    # Merge de la tienda pe xd
     try:
-        print('Juntando Imagenes y creando la tienda...')
+        print('Juntando Imágenes y creando la tienda...')
+        
+        # Conteo de items, y creacion de la imagen png de todos los items a medida
         imagenes = [file for file in listdir(f'./output/tiendaHoy')]
         imagenesContadas = int(round(math.sqrt(len(imagenes)+0.5), 0))
         imagenCosmeticos = Image.new("RGBA", (519*imagenesContadas, 519*imagenesContadas), color=(0, 0, 0, 0))
         x = 6; y = 6
         contador = 0
 
+        # Pegando las imagenes en la imagen PNG principal
         for img in imagenes:
             cosmetico = Image.open(f"./output/tiendaHoy/{img}").convert("RGBA")
             if contador >= imagenesContadas:
@@ -172,18 +188,24 @@ def tienda():
             imagenCosmeticos.paste(cosmetico, (x, y), cosmetico)
             x += 518
             contador += 1
+
+        # Guardando imagen PNG con todos los items
         imagenCosmeticos.save("./assets/cache/items.png"); xCosmeticos,yCosmeticos = imagenCosmeticos.size
+        # Creando una imagen para toda la tienda con las medidas
         imagenFinal = Image.new("RGBA", (xCosmeticos, yCosmeticos+590), color="#"+fondoCustomItemShop)
         xFinal, yFinal = imagenFinal.size
 
+        # Pegando la imagen de fondo personalizada
         if bgCustomImage:
             customBgImg = Image.open('assets/imgs/fondo.png').convert('RGBA')
             customBgImg = customBgImg.resize((xFinal, yFinal))
             imagenFinal.paste(customBgImg, (0,0), customBgImg)
 
+        # Pegando la imagen PNG de todos los items, en la imagen de la tienda
         imagenFinal.paste(imagenCosmeticos, (0, 517), imagenCosmeticos)
         draw=ImageDraw.Draw(imagenFinal)
 
+        # Escribiendo en la imagen titulo, fecha y CC de JuandaBot
         font=ImageFont.truetype(fuente,240)
         draw.text((xFinal/2, 44),tituloCustomItemShop,font=font,fill='white', anchor="mt")
         font=ImageFont.truetype(fuente,140)
@@ -191,25 +213,27 @@ def tienda():
         font=ImageFont.truetype(fuente,60)
         draw.text((xFinal-7, 458),"Generado con JuandaBot",font=font,fill='white', anchor="rt")
 
+        # Comprimiendo imagen y guardando
         xComprimida, yComprimida = math.floor(xFinal/2), math.floor(yFinal/2)
         imagenFinal = imagenFinal.resize((xComprimida, yComprimida),Image.ANTIALIAS); imagenFinal.save(f"output/tienda.png",quality=65)
         print('Imagen Generada en la carpeta output!')
 
+        # Subir a Twitter en caso que esté activado + su Exception en caso de error
         if twitterConnect:
             print('Subiendo a Twitter.')
             try:
                 twitterAPI.PostUpdate(twtBodyTienda, media='output/tienda.png')
-                print('Tweet Subido con exito!')
+                print('Tweet Subido con éxito!')
             except Exception as error:
                 jdbconsole.error('Ha ocurrido un error al intentar subir el tweet')
                 jdbconsole.error(error)
                 jdbconsole.errTip(linkDiscord)
                 jdbconsole.exitMsg()
         else:
-            jdbconsole.warning('Twitter deconectado o no se encontraron las keys.')
+            jdbconsole.warning('Twitter desconectado o no se encontraron las keys.')
         end = time.time()
         jdbconsole.tip('Bot hecho por @JuanDa553YT')
-        jdbconsole.tip(f'Tiempo de generacion: {round(end - start, 2)} segundos.')
+        jdbconsole.tip(f'Tiempo de generación: {round(end - start, 2)} segundos.')
 
         input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
     except Exception as error:
@@ -217,14 +241,18 @@ def tienda():
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
 
+
+# Función - Generar items OG
 def itemsOg():
     if rcpConnect: RPC.update(state='Tienda OG', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
-    print(Fore.YELLOW + f"Items OG\nDiás para OG: {tiendaOGdias}\nLOGGER\n\n")
+    print(Fore.YELLOW + f"Items OG\nDías para OG: {tiendaOGdias}\nLOGGER\n\n")
 
+    # Inicializando variables
     x = 0
     y = 0
     start = time.time()
 
+    # Literal el print de abajo dice lo que hace este bloque de código xd
     print('Limpiando carpeta de items...')
     try:
         shutil.rmtree('./output/tiendaOg')
@@ -232,6 +260,7 @@ def itemsOg():
     except:
         os.makedirs('./output/tiendaOg')
 
+    # Consumiendo API
     try:
         print('Obteniendo informacion de tienda actual...')
         api = "https://fortniteapi.io/v2/shop?lang=es"; 
@@ -242,6 +271,7 @@ def itemsOg():
         jdbconsole.errTip(linkDiscord)
         jdbconsole.exitMsg()
 
+    # Literal el print de abajo dice lo que hace este bloque de código xd x2
     try:
         print('Contando items Og de la tienda actual...')
         for i in data:
@@ -257,7 +287,7 @@ def itemsOg():
         if y >=1:
             print(f'Se encontraron {y} items og de la tienda actual!')
         else:
-            print('No se encontró ningun item "OG" en la tienda actual.')
+            print('No se encontró ningún item "OG" en la tienda actual.')
             input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
 
     except Exception as error:
@@ -265,16 +295,21 @@ def itemsOg():
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
 
+    # Generando item por items OG de la tienda
     print('')
     print('Preparando para empezar a generar items...')
     print('')
     for i in data:
         itemUltimaFecha = i["previousReleaseDate"]
+
+        # Obteniendo días sin sales pe
         try:
             a = datetime.strptime(itemUltimaFecha, '%Y-%m-%d').date()
             c = a - fechaHoy; d = abs(c.days)
         except:
             d = 0
+
+        # Comprobar que los días que tiene sin salir son igual o mayores que los días predefinidos en config.json. Y que no sea un bundle. Para generar ese item
         if d >= tiendaOGdias and i["mainType"] != 'bundle':
             try:
                 x+=1
@@ -282,6 +317,7 @@ def itemsOg():
                 imgUrl = i["displayAssets"][0]["full_background"]
                 id = i["mainId"]
 
+                # Descargando imagen
                 img = requests.get(imgUrl, allow_redirects=True)
                 open(f'./assets/cache/{id}.png', 'wb').write(img.content)
                 img=Image.open(f'./assets/cache/{id}.png')
@@ -290,6 +326,7 @@ def itemsOg():
                 img = Image.open(f'./assets/cache/{id}.png')
                 draw = ImageDraw.Draw(img)
 
+                # Pintando días sin salir ne la imagen
                 itemUltimaSalida = i["previousReleaseDate"]
                 a = datetime.strptime(itemUltimaSalida, '%Y-%m-%d').date(); b = fechaHoy - a
                 itemDiasSinSalir = f'{b.days} días'
@@ -297,7 +334,7 @@ def itemsOg():
                 font=ImageFont.truetype(fuente,24)
                 draw.text((4,487),itemDiasSinSalir,font=font,fill="white")
 
-
+                # Guardando item en orden de tipo de objeto
                 if tipopopo == "outfit":
                     img.save(f'./output/tiendaOg/b{id}.png')
                 else:
@@ -309,15 +346,18 @@ def itemsOg():
             except Exception as error:
                 jdbconsole.error(f'Error al generar la imagen de {i["displayName"]}, ignorando item. - {error}')
 
+    # Merge de los items og
     if x >= 1:
         print('Juntando items...')
         try:
+            # Conteo de items y creando imagen PNG con los items
             imagenes = [file for file in listdir(f'./output/tiendaOg')]
             imagenesContadas = int(round(math.sqrt(len(imagenes)), 0))
             imagenCosmeticos = Image.new("RGBA", (519*imagenesContadas, 519*imagenesContadas), color=(0, 0, 0, 0))
             x = 6; y = 6
             contador = 0
 
+            # Pegando los items en la imagen PNG
             for img in imagenes:
                 cosmetico = Image.open(f"./output/tiendaOg/{img}").convert("RGBA")
                 if contador >= imagenesContadas:
@@ -327,14 +367,18 @@ def itemsOg():
                 x += 518
                 contador += 1
             imagenCosmeticos.save("./assets/cache/itemsOg.png"); xCosmeticos,yCosmeticos = imagenCosmeticos.size
+
+            # Generando nueva imagen principal
             imagenFinal = Image.new("RGBA", (xCosmeticos, yCosmeticos+181), color="#"+fondoCustomItemShop)
             xFinal, yFinal = imagenFinal.size
 
+            # Fondo personalizado
             if bgCustomImage:
                 customBgImg = Image.open('assets/imgs/fondo.png').convert('RGBA')
                 customBgImg = customBgImg.resize((xFinal, yFinal))
                 imagenFinal.paste(customBgImg, (0,0), customBgImg)
 
+            # Pegando PNG en la imagen de tienda y guardando.
             imagenFinal.paste(imagenCosmeticos, (0, 108), imagenCosmeticos)
             draw=ImageDraw.Draw(imagenFinal)
 
@@ -349,65 +393,70 @@ def itemsOg():
             jdbconsole.error(error)
             jdbconsole.errTip(linkDiscord)
  
-
+        # Subir a Twitter en caso de tenerlo activo
         if twitterConnect:
             print('Subiendo a Twitter...')
             try:
                 twitterAPI.PostUpdate(twtBodyOg, media='output/itemsOg.png')
-                print('Tweet subido con exito!')
+                print('Tweet subido con éxito!')
             except Exception as error:
                 jdbconsole.error('Error al subir el Tweet')
                 jdbconsole.error(error)
                 jdbconsole.errTip(linkDiscord)
                 jdbconsole.exitMsg()
         else:
-            jdbconsole.warning('Twitter deconectado o no se encontraron las keys.')
+            jdbconsole.warning('Twitter desconectado o no se encontraron las keys.')
     end = time.time()
     jdbconsole.tip('Bot hecho por @JuanDa553YT')
-    jdbconsole.tip(f'Tiempo de generacion: {round(end - start, 2)} segundos.')
+    jdbconsole.tip(f'Tiempo de generación: {round(end - start, 2)} segundos.')
     input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
 
+# Función - Secciones de tienda actuales en la API
 def secciones():
     if rcpConnect: RPC.update(state='Secciones de Tienda', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
     print(Fore.YELLOW + f'Secciones de tienda.\nLOGGER\n\n')
 
+    # Literal el print de abajo dice lo que hace este bloque de código xd x3
     print('Conectando con la API')
     try:
         response = requests.get('https://fn-api.com/api/shop/br/sections?lang=es')
         data = response.json()['data']['sections']
-        print('API conectada con exito')
+        print('API conectada con éxito')
     except Exception as error:
         jdbconsole.error('Ha ocurrido un error al intentar conectar con la API')
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
         jdbconsole.exitMsg()
-    secciones = ""
+    secciones = "" # Inicializando variable de secciones
 
+    # Literal el print de abajo dice lo que hace este bloque de código xd x4
     print('Generando secciones')
     for i in data:
         secciones += f'• {i["name"]}. x{i["quantity"]}\n'
 
-    print('Secciones obtenidas con exito!\n')
+    print('Secciones obtenidas con éxito!\n')
     print(Fore.CYAN + "Secciones de la tienda de Fortnite para esta noche.:\n\n"+ secciones)
 
+    # # Literal el print de abajo dice lo que hace este bloque de código xd x5
     if twitterConnect:
         print('Subiendo a Twitter')
         try:
             twitterAPI.PostUpdate(twtBodySecciones+secciones)
-            print('Tweet subido con exito!')
+            print('Tweet subido con éxito!')
         except Exception as error:
             jdbconsole.error('Error al subir el Tweet')
             jdbconsole.error(error)
             jdbconsole.errTip(linkDiscord)
             jdbconsole.exitMsg()
     else:
-        jdbconsole.warning('Twitter deconectado o no se encontraron las keys.')
+        jdbconsole.warning('Twitter desconectado o no se encontraron las keys.')
 
     jdbconsole.tip('Bot hecho por @JuanDa553YT')
     input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
 
 ################################################################################################################################################################################
 
+# Menú principal V1
 def menu():
     print('Cargando')
     time.sleep(1)
@@ -454,7 +503,7 @@ def menu():
         system("cls")
         menu()
 
-
+# Si el bot no está en la version actual, chao pescao
 if botVersion == juandaBotApiData["public"]["version"]:
     menu()
 else:
