@@ -1,0 +1,4 @@
+run.bat
+dist/
+__pycache__/
+assets/__pycache__/
