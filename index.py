@@ -253,7 +253,7 @@ def itemsOg():
     start = time.time()
 
     # Literal el print de abajo dice lo que hace este bloque de código xd
-    print('Limpiando carpeta de items...')
+    jdbconsole.log('Limpiando carpeta de items...')
     try:
         shutil.rmtree('./output/tiendaOg')
         os.makedirs('./output/tiendaOg')
@@ -262,7 +262,7 @@ def itemsOg():
 
     # Consumiendo API
     try:
-        print('Obteniendo informacion de tienda actual...')
+        jdbconsole.log('Obteniendo informacion de tienda actual...')
         api = "https://fortniteapi.io/v2/shop?lang=es"; 
         resp = requests.get(api, headers=headers); data = resp.json()["shop"]
     except Exception as error:
@@ -273,7 +273,7 @@ def itemsOg():
 
     # Literal el print de abajo dice lo que hace este bloque de código xd x2
     try:
-        print('Contando items Og de la tienda actual...')
+        jdbconsole.log('Contando items Og de la tienda actual...')
         for i in data:
             itemUltimaFecha = i["previousReleaseDate"]
             try:
@@ -285,10 +285,10 @@ def itemsOg():
                 y += 1
 
         if y >=1:
-            print(f'Se encontraron {y} items og de la tienda actual!')
+            jdbconsole.log(f'Se encontraron {y} items og de la tienda actual!')
         else:
             print('No se encontró ningún item "OG" en la tienda actual.')
-            input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
+            jdbconsole.log(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
 
     except Exception as error:
         jdbconsole.error('Error al contar los items OG de hoy')
@@ -297,7 +297,7 @@ def itemsOg():
 
     # Generando item por items OG de la tienda
     print('')
-    print('Preparando para empezar a generar items...')
+    jdbconsole.log('Preparando para empezar a generar items...')
     print('')
     for i in data:
         itemUltimaFecha = i["previousReleaseDate"]
@@ -342,13 +342,13 @@ def itemsOg():
                 os.remove(f'assets/cache/{id}.png')
                 porcentaje = x/y; porcentaje = porcentaje * 100
 
-                print(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {int(round(porcentaje, 0))}%)')
+                jdbconsole.log(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {int(round(porcentaje, 0))}%)')
             except Exception as error:
                 jdbconsole.error(f'Error al generar la imagen de {i["displayName"]}, ignorando item. - {error}')
 
     # Merge de los items og
     if x >= 1:
-        print('Juntando items...')
+        jdbconsole.log('Juntando items...')
         try:
             # Conteo de items y creando imagen PNG con los items
             imagenes = [file for file in listdir(f'./output/tiendaOg')]
@@ -387,7 +387,7 @@ def itemsOg():
 
             imagenFinal.save(f"output/itemsOg.png")
 
-            print('Imagen Generada en la carpeta output!')
+            jdbconsole.log('Imagen Generada en la carpeta output!')
         except Exception as error:
             jdbconsole.error('Error al juntar items')
             jdbconsole.error(error)
@@ -395,10 +395,10 @@ def itemsOg():
  
         # Subir a Twitter en caso de tenerlo activo
         if twitterConnect:
-            print('Subiendo a Twitter...')
+            jdbconsole.log('Subiendo a Twitter...')
             try:
                 twitterAPI.PostUpdate(twtBodyOg, media='output/itemsOg.png')
-                print('Tweet subido con éxito!')
+                jdbconsole.log('Tweet subido con éxito!')
             except Exception as error:
                 jdbconsole.error('Error al subir el Tweet')
                 jdbconsole.error(error)
@@ -417,7 +417,7 @@ def secciones():
     print(Fore.YELLOW + f'Secciones de tienda.\nLOGGER\n\n')
 
     # Literal el print de abajo dice lo que hace este bloque de código xd x3
-    print('Conectando con la API')
+    jdbconsole.log('Conectando con la API')
     try:
         response = requests.get('https://fn-api.com/api/shop/br/sections?lang=es')
         data = response.json()['data']['sections']
@@ -430,11 +430,11 @@ def secciones():
     secciones = "" # Inicializando variable de secciones
 
     # Literal el print de abajo dice lo que hace este bloque de código xd x4
-    print('Generando secciones')
+    jdbconsole.log('Generando secciones')
     for i in data:
         secciones += f'• {i["name"]}. x{i["quantity"]}\n'
 
-    print('Secciones obtenidas con éxito!\n')
+    jdbconsole.log('Secciones obtenidas con éxito!\n')
     print(Fore.CYAN + "Secciones de la tienda de Fortnite para esta noche.:\n\n"+ secciones)
 
     # # Literal el print de abajo dice lo que hace este bloque de código xd x5
@@ -453,6 +453,27 @@ def secciones():
 
     jdbconsole.tip('Bot hecho por @JuanDa553YT')
     input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
+
+# Función Automatica - Secciones de tienda actuales de la API
+def autoSecciones():
+    if rcpConnect: RPC.update(state='Secciones de Tienda AUTO', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
+    print(Fore.YELLOW + f'Secciones de tienda - MODO AUTOMATICO.\nLOGGER\n\n')
+
+    # Literal el print de abajo dice lo que hace este bloque de código xd x6
+    jdbconsole.log("Conectando con la API")
+    try:
+        data1 = requests.get("https://fn-api.com/api/shop/br/sections?lang=es").json()['data']['sections']
+        jdbconsole.log('API conectada con éxito')
+    except Exception as error:
+        jdbconsole.error('Ha ocurrido un error al intentar conectar con la API')
+        jdbconsole.error(error)
+        jdbconsole.errTip(linkDiscord)
+        jdbconsole.exitMsg()
+        
+    # Inicializando variable de secciones e intentos
+    secciones = "" 
+    att = 1
+
 
 ################################################################################################################################################################################
 
