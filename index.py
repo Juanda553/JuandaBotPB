@@ -99,32 +99,38 @@ def merge(metodo="tienda"):
     try:
         jdbconsole.log('Juntando Imágenes, espere un momento...')
             
-        separacionX = 6
-        separacionY = 6
+        separacionX = 16
+        separacionY = 16
+        itemImgSize = 512
 
         if metodo == "tienda": ruta = "output/tiendaHoy"
         elif metodo == "og": ruta = "output/tiendaOg"
             
         imagenesItems = [file for file in listdir(ruta)] # Array con todos las imagenes de los items
-        filasColumnas = round(math.sqrt(len(imagenesItems)+0.5)) # Definir la cantidad de items por filas y columnas sacando la raiz cuadrada de la cantidad de items
-        shopPng = Image.new("RGBA", ((512 + separacionX)*filasColumnas, (512 + separacionY)*filasColumnas), color=(0, 0, 0, 0)) # Creando una imagen PNG para pegar los items
+        #filasColumnas = round(math.sqrt(len(imagenesItems)+0.5)) # Definir la cantidad de items por filas y columnas sacando la raiz cuadrada de la cantidad de items
+        #shopPng = Image.new("RGBA", ((512 + separacionX)*filasColumnas, (512 + separacionY)*filasColumnas), color=(0, 0, 0, 0)) # Creando una imagen PNG para pegar los items
+        
+        filas = math.ceil(math.sqrt(len(imagenesItems)))
+        columnas = round(math.sqrt(len(imagenesItems)))
+        shopPng = Image.new("RGBA", (int((512 + (separacionX * 1.5))*filas), int((512 + (separacionY * 1.5))*columnas)), color=(0, 0, 0, 0)) # Creando una imagen PNG para pegar los items
+        
 
         # Inicia pegando desde las separaciones establecidas
-        posX = separacionX 
-        posY = separacionY 
+        posX = separacionX
+        posY = 0
         rowCounter = 0
 
         # Pegando las imagenes en la imagen PNG
         for img in imagenesItems:
             item = Image.open(f"{ruta}/{img}").convert("RGBA") # Abre imagen del item
 
-            if rowCounter >= filasColumnas: # Si el contador es mayor a la cantidad de filas y columnas
-                posY += 518 # Aumentar un bloque en Y // salto de linea
-                posX = 6 # X queda en el inicio de nuevo 
+            if rowCounter >= filas: # Si el contador es mayor a la cantidad de filas y columnas
+                posY += (itemImgSize + separacionY) # Aumentar un bloque en Y // salto de linea
+                posX = separacionX # X queda en el inicio de nuevo 
                 rowCounter = 0 # Se reinicia el contador de la fila 
 
             shopPng.paste(item, (posX, posY), item) # Pega el item en la posicion establecida
-            posX += 518 # Aumentar un bloque en X
+            posX += (itemImgSize + separacionX) # Aumentar un bloque en X
             rowCounter += 1 # Amenta el contador de los items en la fila
         jdbconsole.devTest("merge F1 completo")
 
@@ -135,9 +141,9 @@ def merge(metodo="tienda"):
 
         # Creando una imagen para toda la tienda con las medidas
         if metodo == "tienda":
-            shopFinal = Image.new("RGBA", (pngX, pngY+590), color="#"+fondoCustomItemShop)
+            shopFinal = Image.new("RGBA", (pngX, pngY+517), color="#"+fondoCustomItemShop)
         elif metodo == "og":
-            shopFinal = Image.new("RGBA", (pngX, pngY+181), color="#"+fondoCustomItemShop)
+            shopFinal = Image.new("RGBA", (pngX, pngY+108), color="#"+fondoCustomItemShop)
 
         xFinal, yFinal = shopFinal.size
         jdbconsole.devTest("img jpg creada")
@@ -163,19 +169,19 @@ def merge(metodo="tienda"):
             jdbconsole.devTest("titulo dibujado")
             draw.text((xFinal/2, 339),fechaHoySTR,font=ImageFont.truetype(fuente,140),fill='white', anchor="mt")
             jdbconsole.devTest("fecha dibujado")
-            draw.text((xFinal-7, 458),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="rt")
+            draw.text((7, 458),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="lt")
             jdbconsole.devTest("CC dibujado")
         elif metodo == "og":
-            draw.text((xFinal-7, 49),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="rt")
+            draw.text((7, 49),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="lt")
             jdbconsole.devTest("CC dibujado")
 
         # Comprimiendo imagen y guardando
         shopFinal = shopFinal.convert("RGB")
 
         if metodo == "tienda":
-            shopFinal.save("output/tienda.jpg", quality=30)
+            shopFinal.save("output/tienda.jpg", quality=100)
         elif metodo == "og":
-            shopFinal.save("output/itemsOg.jpg", quality=30)
+            shopFinal.save("output/itemsOg.jpg", quality=100)
 
         jdbconsole.log('Imagen Generada en la carpeta output!')
         input()
