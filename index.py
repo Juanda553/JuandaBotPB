@@ -8,6 +8,7 @@ Estare constantemente tratando de mejorar este programa, asi que estar algo pend
 '''
 
 from traceback import print_tb
+from discord import option
 import requests, time, PIL, math, os, json, shutil, datetime, twitter
 
 from datetime import date, datetime
@@ -490,6 +491,7 @@ def autoSecciones():
             else:
                 jdbconsole.error("Actualmente, la API está caída. Espere mientras se intenta reconectar con la API...")
                 att += 1
+            time.sleep(5)
 
 # Función Automatica - Generacionde tienda actual
 def autoTienda():
@@ -529,6 +531,7 @@ def autoTienda():
             else:
                 jdbconsole.error("Actualmente, la API está caída. Espere mientras se intenta reconectar con la API...")
                 att += 1
+            time.sleep(5)
 
 
 ################################################################################################################################################################################
@@ -544,14 +547,20 @@ def menu():
         print(Fore.CYAN + '(1) • Tienda Diaria')
         print(Fore.CYAN + '(2) • Items OG de hoy')
         print(Fore.CYAN + '(3) • Secciones de Tienda\n')
-    elif checkFNapiIO(JuandaFortUser, fnapikey) == False:
+
+        print(Fore.RED + "• • • • • Funciones Automaticas (EXPERIMENTAL / BETA) • • • • •\n")
+
+        print(Fore.BLUE + '(4) • Tienda Diaria AUTO')
+        print(Fore.BLUE + '(5) • Secciones de Tienda AUTO\n')
+    elif fnapikey == '' or checkFNapiIO(JuandaFortUser, fnapikey) == False:
         print(Fore.RED + '(1) • Tienda Diaria [NECESITAS LA KEY DE FORTNITEAPI.IO]')
         print(Fore.RED + '(2) • Items OG de hoy [NECESITAS LA KEY DE FORTNITEAPI.IO]')
         print(Fore.CYAN + '(3) • Secciones de Tienda\n')
-    elif fnapikey == '':
-        print(Fore.RED + '(1) • Tienda Diaria [NECESITAS LA KEY DE FORTNITEAPI.IO]')
-        print(Fore.RED + '(2) • Items OG de hoy [NECESITAS LA KEY DE FORTNITEAPI.IO]')
-        print(Fore.CYAN + '(3) • Secciones de Tienda\n')
+
+        print(Fore.RED + "• • • • • Funciones Automaticas (EXPERIMENTAL / BETA) • • • • •\n")
+
+        print(Fore.RED + '(4) • Tienda Diaria AUTO [NECESITAS LA KEY DE FORTNITEAPI.IO]')
+        print(Fore.BLUE + '(5) • Secciones de Tienda AUTO\n')
 
     if twitterConnect:
         print(Fore.GREEN + 'Twitter Conectado!')
@@ -576,6 +585,14 @@ def menu():
         system("cls")
         secciones()
 
+    elif optionChoice == "4":
+        system("cls")
+        autoTienda()
+
+    elif optionChoice == "5":
+        system("cls")
+        autoSecciones()
+
     else:
         system("cls")
         menu()
@@ -588,5 +605,13 @@ else:
     jdbconsole.error('Estas usando una version antigua de JuandaBot.')
     print(Fore.CYAN + f'\nEstas usando: v{botVersion}\nLa nueva version es: v{juandaBotApiData["public"]["version"]}\n')
     jdbconsole.exitMsg()
+
+# Antes | 2020 - 2021 - inicios de 2022
+api = "linkApi"
+resp = requests.get(api)
+data = resp.json()["keyPadre"]["keyHija"]
+
+# Ahora todo un hijo de puta sin vida social <3
+data = requests.get("linkApi").json()
 
 while True: time.sleep(1)
