@@ -24,7 +24,7 @@ print('Cargando...')
 
 # Cargado inicial de configuraciones por el usuario
 
-with open ("assets/config.json") as tempConfigData:
+with open ("assets/config.json", "r") as tempConfigData:
     jdbData = json.load(tempConfigData)
 
 botVersion = '1.1.1'
