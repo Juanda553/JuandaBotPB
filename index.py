@@ -24,7 +24,8 @@ print('Cargando...')
 
 # Cargado inicial de configuraciones por el usuario
 
-jdbFile = open("assets/config.json"); jdbData = json.load(jdbFile); jdbFile.close()
+with open ("assets/config.json") as tempConfigData:
+    jdbData = json.load(tempConfigData)
 
 botVersion = '1.1.1'
 fnapikey = jdbData["general"]["fortniteapiio"]
