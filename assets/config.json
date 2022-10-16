@@ -19,7 +19,9 @@
       "tweetsCuerpos": {
         "tienda": "Nueva tienda de Fortnite!\n\n#Fortnite",
         "itemsOg": "Items que no regresaban hace mucho tiempo a la tienda!\n\n#Fortnite",
-        "secciones": "Secciones de la tienda de #Fortnite para esta noche.\n\n"
+        "secciones": "Secciones de la tienda de #Fortnite para esta noche.\n\n",
+        
+        "seccionesImagen": true
       }
     }
   }

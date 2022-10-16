@@ -42,6 +42,7 @@ secret_token = jdbData["twitter"]["secret_token"]
 twtBodyTienda = jdbData["twitter"]["tweetsCuerpos"]["tienda"]
 twtBodyOg = jdbData["twitter"]["tweetsCuerpos"]["itemsOg"]
 twtBodySecciones = jdbData["twitter"]["tweetsCuerpos"]["secciones"]
+seccionesImg = jdbData["twitter"]["tweetsCuerpos"]["seccionesImagen"]
 
 headers = {'Authorization': fnapikey}
 fuente = f'assets/fuentes/Fortnite.otf'
@@ -239,7 +240,6 @@ def tienda():
         jdbconsole.error('Hubo un error al juntar los items y crear la imagen completa de la tienda')
         jdbconsole.error(error)
         jdbconsole.errTip(linkDiscord)
-
 
 # Función - Generar items OG
 def itemsOg():
@@ -440,7 +440,10 @@ def secciones():
     if twitterConnect:
         print('Subiendo a Twitter')
         try:
-            twitterAPI.PostUpdate(twtBodySecciones+secciones)
+            if seccionesImg:
+                twitterAPI.PostUpdate(twtBodySecciones+secciones, media="assets/imgs/tiendasects.jpg")
+            else:
+                twitterAPI.PostUpdate(twtBodySecciones+secciones)
             print('Tweet subido con éxito!')
         except Exception as error:
             jdbconsole.error('Error al subir el Tweet')
@@ -588,7 +591,6 @@ def menu():
     elif optionChoice == "4":
         system("cls")
         autoTienda()
-
     elif optionChoice == "5":
         system("cls")
         autoSecciones()
@@ -605,13 +607,5 @@ else:
     jdbconsole.error('Estas usando una version antigua de JuandaBot.')
     print(Fore.CYAN + f'\nEstas usando: v{botVersion}\nLa nueva version es: v{juandaBotApiData["public"]["version"]}\n')
     jdbconsole.exitMsg()
-
-# Antes | 2020 - 2021 - inicios de 2022
-api = "linkApi"
-resp = requests.get(api)
-data = resp.json()["keyPadre"]["keyHija"]
-
-# Ahora todo un hijo de puta sin vida social <3
-data = requests.get("linkApi").json()
 
 while True: time.sleep(1)
