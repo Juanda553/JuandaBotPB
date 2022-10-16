@@ -3,6 +3,4 @@ dist/
 __pycache__/
 assets/__pycache__/
 assets/cache/*.png
-output/tiendaHoy/*.png
-output/tiendaOg/*.png
-output/*.png
+output/

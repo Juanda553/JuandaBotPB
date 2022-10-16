@@ -1,3 +1,4 @@
+botVersion = '1.1.1'
 '''
 Por favor, no edites nada de este código para que sirva todo perfectamente.
 Tampoco robes ni modifiques nada del codigo. Solo para uso PROPIO.
@@ -7,10 +8,7 @@ Estare constantemente tratando de mejorar este programa, asi que estar algo pend
 © JuanDa553 2020 • @JuandaLeaks553 | @JuanDa553YT | Juanda553#9543 
 '''
 
-from traceback import print_tb
-from discord import option
 import requests, time, PIL, math, os, json, shutil, datetime, twitter
-
 from datetime import date, datetime
 from PIL import Image, ImageFont, ImageDraw
 from os import listdir, system
@@ -23,11 +21,9 @@ from pypresence import Presence
 print('Cargando...')
 
 # Cargado inicial de configuraciones por el usuario
-
 with open ("assets/config.json", "r") as tempConfigData:
     jdbData = json.load(tempConfigData)
 
-botVersion = '1.1.1'
 fnapikey = jdbData["general"]["fortniteapiio"]
 tituloCustomItemShop = jdbData["tienda"]["titulo"]
 fondoCustomItemShop = jdbData["tienda"]["colorDeFondo"]
@@ -52,16 +48,15 @@ os.system("cls")
 os.system(f"TITLE JuandaBot {botVersion}")
 
 # Comprobar version actual de JuandaBot
-juandaBotAPI = requests.get('https://pastebin.com/raw/P0nLHktg')
-juandaBotApiData = juandaBotAPI.json()
+juandaBotAPI = requests.get('https://pastebin.com/raw/P0nLHktg').json()
 
-if botVersion != juandaBotApiData["public"]["version"]:
-    windowsBox('JuandaBot', f'La version actual de JuandaBot que estas usando, es una version antigua, estas usando actualmente la {botVersion} y la ultima version es la {juandaBotApiData["public"]["version"]}', 0)
+if botVersion != juandaBotAPI["public"]["version"]:
+    windowsBox('JuandaBot', f'La version actual de JuandaBot que estas usando, es una version antigua, estas usando actualmente la {botVersion} y la ultima version es la {juandaBotAPI["public"]["version"]}', 0)
 
-linkDiscord = juandaBotApiData["public"]["linkDiscord"]
-rpcImage = juandaBotApiData["public"]["RPC"]["RPCimage"]
-rpcBotones = juandaBotApiData["public"]["RPC"]["RPCbuttons"]
-JuandaFortUser = juandaBotApiData["owner"]
+linkDiscord = juandaBotAPI["public"]["linkDiscord"]
+rpcImage = juandaBotAPI["public"]["RPC"]["RPCimage"]
+rpcBotones = juandaBotAPI["public"]["RPC"]["RPCbuttons"]
+JuandaFortUser = juandaBotAPI["owner"]
 
 hoy = datetime.now(); fechaHoy = date(hoy.year, hoy.month, hoy.day)
 fechaHoySTR = f"{hoy.year}-{hoy.month}-{hoy.day}"
@@ -72,7 +67,8 @@ fechaHoySTR = f"{hoy.year}-{hoy.month}-{hoy.day}"
 if twitterIniciar:
     try:
         print("Conectando a Twitter")
-        twitterAPI = twitter.Api(consumer_key=key, consumer_secret=secret_key, access_token_key=token, access_token_secret=secret_token);twitterAPI.VerifyCredentials()
+        twitterAPI = twitter.Api(consumer_key=key, consumer_secret=secret_key, access_token_key=token, access_token_secret=secret_token)
+        twitterAPI.VerifyCredentials()
         twitterConnect = True
         print('Twitter Conectado con éxito.')
     except Exception as Error:
@@ -87,7 +83,8 @@ else: #Si está desactivado en las configuraciones
 # RCP de Discord
 try:
     print("Conectando RPC de Discord...")
-    RPC = Presence(919501199428976641); RPC.connect()
+    RPC = Presence(919501199428976641)
+    RPC.connect()
     RPC.update(state="Cargando...", large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones)
     rcpConnect = True
     print('Discord Conectado con éxito.')
@@ -98,13 +95,107 @@ except Exception as Error:
 
 ################################################################################################################################################################################
 
+def merge(metodo="tienda"):
+    try:
+        jdbconsole.log('Juntando Imágenes, espere un momento...')
+            
+        separacionX = 6
+        separacionY = 6
+
+        if metodo == "tienda": ruta = "output/tiendaHoy"
+        elif metodo == "og": ruta = "output/tiendaOg"
+            
+        imagenesItems = [file for file in listdir(ruta)] # Array con todos las imagenes de los items
+        filasColumnas = round(math.sqrt(len(imagenesItems)+0.5)) # Definir la cantidad de items por filas y columnas sacando la raiz cuadrada de la cantidad de items
+        shopPng = Image.new("RGBA", ((512 + separacionX)*filasColumnas, (512 + separacionY)*filasColumnas), color=(0, 0, 0, 0)) # Creando una imagen PNG para pegar los items
+
+        # Inicia pegando desde las separaciones establecidas
+        posX = separacionX 
+        posY = separacionY 
+        rowCounter = 0
+
+        # Pegando las imagenes en la imagen PNG
+        for img in imagenesItems:
+            item = Image.open(f"{ruta}/{img}").convert("RGBA") # Abre imagen del item
+
+            if rowCounter >= filasColumnas: # Si el contador es mayor a la cantidad de filas y columnas
+                posY += 518 # Aumentar un bloque en Y // salto de linea
+                posX = 6 # X queda en el inicio de nuevo 
+                rowCounter = 0 # Se reinicia el contador de la fila 
+
+            shopPng.paste(item, (posX, posY), item) # Pega el item en la posicion establecida
+            posX += 518 # Aumentar un bloque en X
+            rowCounter += 1 # Amenta el contador de los items en la fila
+        jdbconsole.devTest("merge F1 completo")
+
+        # Guardando imagen PNG con todos los items
+        shopPng.save("./assets/cache/items.png")
+        pngX, pngY = shopPng.size
+        jdbconsole.devTest("saved PNG")
+
+        # Creando una imagen para toda la tienda con las medidas
+        if metodo == "tienda":
+            shopFinal = Image.new("RGBA", (pngX, pngY+590), color="#"+fondoCustomItemShop)
+        elif metodo == "og":
+            shopFinal = Image.new("RGBA", (pngX, pngY+181), color="#"+fondoCustomItemShop)
+
+        xFinal, yFinal = shopFinal.size
+        jdbconsole.devTest("img jpg creada")
+
+        # Pegando la imagen de fondo personalizada
+        if bgCustomImage:
+            customBgImg = Image.open('assets/imgs/fondo.png').convert('RGBA')
+            customBgImg = customBgImg.resize((xFinal, yFinal))
+            shopFinal.paste(customBgImg, (0,0), customBgImg)
+            jdbconsole.devTest("fondo puesto")
+
+        # Pegando la imagen PNG de todos los items, en la imagen de la tienda
+        if metodo == "tienda":
+            shopFinal.paste(shopPng, (0, 517), shopPng)
+        elif metodo == "og":
+            shopFinal.paste(shopPng, (0, 108), shopPng)
+        jdbconsole.devTest("png pegado al main")
+
+        # Escribiendo en la imagen titulo, fecha y CC de JuandaBot 
+        draw=ImageDraw.Draw(shopFinal)
+        if metodo == "tienda":
+            draw.text((xFinal/2, 44),tituloCustomItemShop,font=ImageFont.truetype(fuente,240),fill='white', anchor="mt")
+            jdbconsole.devTest("titulo dibujado")
+            draw.text((xFinal/2, 339),fechaHoySTR,font=ImageFont.truetype(fuente,140),fill='white', anchor="mt")
+            jdbconsole.devTest("fecha dibujado")
+            draw.text((xFinal-7, 458),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="rt")
+            jdbconsole.devTest("CC dibujado")
+        elif metodo == "og":
+            draw.text((xFinal-7, 49),"Generado con JuandaBot",font=ImageFont.truetype(fuente,60),fill='white', anchor="rt")
+            jdbconsole.devTest("CC dibujado")
+
+        # Comprimiendo imagen y guardando
+        shopFinal = shopFinal.convert("RGB")
+
+        if metodo == "tienda":
+            shopFinal.save("output/tienda.jpg", quality=30)
+        elif metodo == "og":
+            shopFinal.save("output/itemsOg.jpg", quality=30)
+
+        jdbconsole.log('Imagen Generada en la carpeta output!')
+        input()
+        merge(metodo)
+
+        return shopFinal
+    except Exception as error:
+        jdbconsole.error('Hubo un error al juntar los items y crear la imagen completa')
+        jdbconsole.error(error)
+        jdbconsole.errTip(linkDiscord)
+
+
 # Funcion - Obtener la tienda actual
 def tienda():
     print(Fore.YELLOW + f"Tienda Diaria.\nLOGGER\n\n")
     if rcpConnect: RPC.update(state='Tienda de objetos BR', large_image=rpcImage, large_text="By: @JuanDa553YT", buttons=rpcBotones, start=time.time())
 
-    # Limpiando Carpeta
-    start = time.time(); x = 1
+    # Limpiando Carpeta e inicializando variables
+    start = time.time()
+    x = 1
     jdbconsole.log('Limpiando carpeta de items...')
     try:
         shutil.rmtree('./output/tiendaHoy')
@@ -130,117 +221,76 @@ def tienda():
     print('')
     for i in new["shop"]:
         try:
-            tipopopo = i["mainType"]
-            imgUrl = i["displayAssets"][0]["full_background"]
-            id = i["mainId"]
+            itemType = i["mainType"]
+            itemImgUrl = i["displayAssets"][0]["full_background"]
+            itemId = i["mainId"]
 
             # Descargando imagen del item
-            img = requests.get(imgUrl, allow_redirects=True); open(f'./assets/cache/{id}.png', 'wb').write(img.content)
-            cosImg=Image.open(f'./assets/cache/{id}.png'); cosImg=cosImg.resize((512,512)); cosImg.save(f'./assets/cache/{id}.png')
+            itemImg = requests.get(itemImgUrl, allow_redirects=True)
+            open(f'./assets/cache/{itemId}.png', 'wb').write(itemImg.content)
 
-            img = Image.open(f'./assets/cache/{id}.png').convert('RGBA')
-    
-            draw=ImageDraw.Draw(img)
+            itemImg = Image.open(f'./assets/cache/{itemId}.png').resize((512,512))
+            imgDraw = ImageDraw.Draw(itemImg)
     
             # Comprobar días sin salir
-            try:
-                itemUltimaSalida = i["previousReleaseDate"]
-                a = datetime.strptime(itemUltimaSalida, '%Y-%m-%d').date(); b = a - fechaHoy
-                itemDiasSinSalir = f'{b.days} días'; itemDiasSinSalir = itemDiasSinSalir.replace("-", "")
-            except:
+            itemUltimaSalida = i["previousReleaseDate"]
+            if itemUltimaSalida:
+                a = datetime.strptime(itemUltimaSalida, '%Y-%m-%d').date()
+                b = fechaHoy - a
+                if b.days >= 1:
+                    itemDiasSinSalir = f'{b.days} días'
+                else:
+                    itemDiasSinSalir = 'Nuevo!'
+            else:
                 itemDiasSinSalir = 'Nuevo!'
 
             # Dibujar nombre, precio y días sin salir en la imagen
-            font=ImageFont.truetype(fuente,24)
-            draw.text((4,487),itemDiasSinSalir,font=font,fill="white")
+            imgDraw.text(
+                (4,487), 
+                itemDiasSinSalir, 
+                font=ImageFont.truetype(fuente,24), 
+                fill="white"
+            )
 
-            # Guardando imagen generada completa, en orden de tipo de item -- Porcentaje de generación
-            if tipopopo == 'bundle':
-                img.save(f'./output/tiendaHoy/a{id}.png')
-            elif tipopopo == "outfit":
-                img.save(f'./output/tiendaHoy/b{id}.png')
+            # Guardando imagen generada completa, en orden de tipo de item
+            if itemType == 'bundle':
+                itemImg.save(f'./output/tiendaHoy/a{itemId}.png')
+            elif itemType == "outfit":
+                itemImg.save(f'./output/tiendaHoy/b{itemId}.png')
             else:
-                img.save(f'./output/tiendaHoy/{id}.png')
-            os.remove(f'./assets/cache/{id}.png')
-            porcentaje = x/y; porcentaje = porcentaje * 100
+                itemImg.save(f'./output/tiendaHoy/{itemId}.png')
+                
+            # Eliminando la imagen vacia del cache y calculando porcentaje
+            os.remove(f'./assets/cache/{itemId}.png')
+            porcentaje = int(round((x/y)*100, 0))
 
-            jdbconsole.log(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {int(round(porcentaje, 0))}%)')
-            x=x+1
+            jdbconsole.log(f'Imagen de {i["displayName"]} generada. ({x}/{y} - {porcentaje}%)')
+            x+=1
         except Exception as error:
             jdbconsole.error(f'Error al generar la imagen de {i["displayName"]}, ignorando item. - {error}')
 
     # Merge de la tienda pe xd
-    try:
-        jdbconsole.log('Juntando Imágenes y creando la tienda...')
-        
-        # Conteo de items, y creacion de la imagen png de todos los items a medida
-        imagenes = [file for file in listdir(f'./output/tiendaHoy')]
-        imagenesContadas = int(round(math.sqrt(len(imagenes)+0.5), 0))
-        imagenCosmeticos = Image.new("RGBA", (519*imagenesContadas, 519*imagenesContadas), color=(0, 0, 0, 0))
-        x = 6; y = 6
-        contador = 0
+    merge("tienda")
 
-        # Pegando las imagenes en la imagen PNG principal
-        for img in imagenes:
-            cosmetico = Image.open(f"./output/tiendaHoy/{img}").convert("RGBA")
-            if contador >= imagenesContadas:
-                y += 518; x = 6
-                contador = 0
-            imagenCosmeticos.paste(cosmetico, (x, y), cosmetico)
-            x += 518
-            contador += 1
+    # Subir a Twitter en caso que esté activado + su Exception en caso de error
+    if twitterConnect:
+        jdbconsole.log('Subiendo a Twitter.')
+        try:
+            twitterAPI.PostUpdate(twtBodyTienda, media='output/tienda.jpg')
+            jdbconsole.log('Tweet Subido con éxito!')
+        except Exception as error:
+            jdbconsole.error('Ha ocurrido un error al intentar subir el tweet')
+            jdbconsole.error(error)
+            jdbconsole.errTip(linkDiscord)
+            jdbconsole.exitMsg()
+    else:
+        jdbconsole.warning('Twitter desconectado o no se encontraron las keys.')
+    end = time.time()
+    jdbconsole.tip('Bot hecho por @JuanDa553YT')
+    jdbconsole.tip(f'Tiempo de generación: {round(end - start, 2)} segundos.')
 
-        # Guardando imagen PNG con todos los items
-        imagenCosmeticos.save("./assets/cache/items.png"); xCosmeticos,yCosmeticos = imagenCosmeticos.size
-        # Creando una imagen para toda la tienda con las medidas
-        imagenFinal = Image.new("RGBA", (xCosmeticos, yCosmeticos+590), color="#"+fondoCustomItemShop)
-        xFinal, yFinal = imagenFinal.size
-
-        # Pegando la imagen de fondo personalizada
-        if bgCustomImage:
-            customBgImg = Image.open('assets/imgs/fondo.png').convert('RGBA')
-            customBgImg = customBgImg.resize((xFinal, yFinal))
-            imagenFinal.paste(customBgImg, (0,0), customBgImg)
-
-        # Pegando la imagen PNG de todos los items, en la imagen de la tienda
-        imagenFinal.paste(imagenCosmeticos, (0, 517), imagenCosmeticos)
-        draw=ImageDraw.Draw(imagenFinal)
-
-        # Escribiendo en la imagen titulo, fecha y CC de JuandaBot
-        font=ImageFont.truetype(fuente,240)
-        draw.text((xFinal/2, 44),tituloCustomItemShop,font=font,fill='white', anchor="mt")
-        font=ImageFont.truetype(fuente,140)
-        draw.text((xFinal/2, 339),fechaHoySTR,font=font,fill='white', anchor="mt")
-        font=ImageFont.truetype(fuente,60)
-        draw.text((xFinal-7, 458),"Generado con JuandaBot",font=font,fill='white', anchor="rt")
-
-        # Comprimiendo imagen y guardando
-        xComprimida, yComprimida = math.floor(xFinal/2), math.floor(yFinal/2)
-        imagenFinal = imagenFinal.resize((xComprimida, yComprimida),Image.ANTIALIAS); imagenFinal.save(f"output/tienda.png",quality=65)
-        jdbconsole.log('Imagen Generada en la carpeta output!')
-
-        # Subir a Twitter en caso que esté activado + su Exception en caso de error
-        if twitterConnect:
-            jdbconsole.log('Subiendo a Twitter.')
-            try:
-                twitterAPI.PostUpdate(twtBodyTienda, media='output/tienda.png')
-                jdbconsole.log('Tweet Subido con éxito!')
-            except Exception as error:
-                jdbconsole.error('Ha ocurrido un error al intentar subir el tweet')
-                jdbconsole.error(error)
-                jdbconsole.errTip(linkDiscord)
-                jdbconsole.exitMsg()
-        else:
-            jdbconsole.warning('Twitter desconectado o no se encontraron las keys.')
-        end = time.time()
-        jdbconsole.tip('Bot hecho por @JuanDa553YT')
-        jdbconsole.tip(f'Tiempo de generación: {round(end - start, 2)} segundos.')
-
-        input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
-    except Exception as error:
-        jdbconsole.error('Hubo un error al juntar los items y crear la imagen completa de la tienda')
-        jdbconsole.error(error)
-        jdbconsole.errTip(linkDiscord)
+    input(Fore.GREEN + '\nTodo listo! Presiona ENTER para volver al menú, o si lo deseas puedes cerrar ya el programa...'); menu()
+    
 
 # Función - Generar items OG
 def itemsOg():
@@ -381,9 +431,7 @@ def itemsOg():
             # Pegando PNG en la imagen de tienda y guardando.
             imagenFinal.paste(imagenCosmeticos, (0, 108), imagenCosmeticos)
             draw=ImageDraw.Draw(imagenFinal)
-
-            font=ImageFont.truetype(fuente,60)
-            draw.text((xFinal-7, 49),"Generado con JuandaBot",font=font,fill='white', anchor="rt")
+            
 
             imagenFinal.save(f"output/itemsOg.png")
 
@@ -397,7 +445,7 @@ def itemsOg():
         if twitterConnect:
             jdbconsole.log('Subiendo a Twitter...')
             try:
-                twitterAPI.PostUpdate(twtBodyOg, media='output/itemsOg.png')
+                twitterAPI.PostUpdate(twtBodyOg, media='output/itemsOg.jpg')
                 jdbconsole.log('Tweet subido con éxito!')
             except Exception as error:
                 jdbconsole.error('Error al subir el Tweet')
@@ -596,17 +644,25 @@ def menu():
         system("cls")
         autoSecciones()
 
+
+
+    elif optionChoice == "devMerge":
+        temp = input()
+        if temp == "tienda":
+            merge("tienda")
+        elif temp == "og":
+            merge("og")
     else:
         system("cls")
         menu()
 
 # Si el bot no está en la version actual, chao pescao
-if botVersion == juandaBotApiData["public"]["version"]:
+if botVersion == juandaBotAPI["public"]["version"]:
     menu()
 else:
     system("cls")
     jdbconsole.error('Estas usando una version antigua de JuandaBot.')
-    print(Fore.CYAN + f'\nEstas usando: v{botVersion}\nLa nueva version es: v{juandaBotApiData["public"]["version"]}\n')
+    print(Fore.CYAN + f'\nEstas usando: v{botVersion}\nLa nueva version es: v{juandaBotAPI["public"]["version"]}\n')
     jdbconsole.exitMsg()
 
 while True: time.sleep(1)

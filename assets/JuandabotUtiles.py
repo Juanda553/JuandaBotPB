@@ -41,3 +41,7 @@ class jdbconsole:
         ya = datetime.now(); datetimeLog = f"{ya.hour}:{ya.minute}:{ya.second}"
         input(Fore.RED + f'[TIP] {datetimeLog} >> Ya puedes cerrar el bot.')
         quit()
+    
+    def devTest(xyz):
+        ya = datetime.now(); datetimeLog = f"{ya.hour}:{ya.minute}:{ya.second}"
+        print(Fore.YELLOW + f'[DEV LOG] {datetimeLog} >> {xyz}')
